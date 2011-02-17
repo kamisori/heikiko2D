@@ -1,0 +1,9 @@
+*~
+bin/*
+obj/*
+include/Box2D/*
+libsfml*
+heikiko2D.depend
+heikiko2D.layout
+recreate_links.sh
+
