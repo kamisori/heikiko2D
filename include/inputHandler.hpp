@@ -7,22 +7,19 @@
 
 struct flags{
     bool Running;
-    bool ApplyForceUpwardToPlayer;
-    bool ApplyForceLeftToPlayer;
-    bool ApplyForceRightToPlayer;
-    bool ApplyForceDownwardToPlayer;
-    bool Restart;
+    bool Stop;
+    bool Save;
+    bool Help;
 };
 
 class InputHandler :public sf::Thread
 {
     private:
-        const sf::Input* keyInput_;
         virtual void Run();
     public:
         sf::Mutex* GlobalMutex_;
         flags globalflags_;
-        InputHandler(sf::RenderWindow* appWindow, sf::Mutex* GlobalMutex);
+        InputHandler(sf::Mutex* GlobalMutex);
         ~InputHandler();
 };
 #endif

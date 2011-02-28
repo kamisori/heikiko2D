@@ -5,14 +5,18 @@
 #include <heikiko2D.hpp>
 #include <Box2D/Box2D.h>
 #include <inputHandler.hpp>
+#include <iostream>
 
+//initializes the inputhandler thread and the network thread.
 void heikiko2D::initializeThreads()
 {
     GlobalMutex_ = new sf::Mutex();
-    inputHandlerThread_ = new InputHandler(appWindow_, GlobalMutex_);
-
+    inputHandlerThread_ = new InputHandler(GlobalMutex_);
 }
 
+//initializes the physics engine
+    //creates the contact listener
+    //creates the game object manager
 void heikiko2D::initializePhysics()
 {
     this->contactListener_ = new ContactListener();
@@ -22,6 +26,11 @@ void heikiko2D::initializePhysics()
     this->simulatedWorld_->SetContactListener(contactListener_);
 }
 
+//load the level data here
+//needs a way to dynamically load a level later, to spawn multiple servers, each with their own leveldata.
+//a server is only spawn, if a player wants to go to that other servers level.
+//probably this wont be that easy, it is very likely that if there is a high load on a serving machine, we wont have more than two or three server processes running...
+//also at the moment i dont know anything about how much overhead a single player creates...
 void heikiko2D::loadLevel()
 {
     std::string visualAppearancesFile ( "data/visualAppearances.data" );
@@ -33,105 +42,101 @@ void heikiko2D::loadLevel()
     this->globalGameObjectManager_->loadObjects( objectFile );
 }
 
+//handle system events here, like saving, shutting down or halting the server
 void heikiko2D::handleSystemEvents()
 {
-    sf::Event Event;
-    while (appWindow_->GetEvent(Event))
+    while (inputHandlerThread_->globalflags_.Running)
     {
-        // Window closed
-        if (Event.Type == sf::Event::Closed){
-            appWindow_->Close();
+        if (inputHandlerThread_->globalflags_.Save)
+        {
+            inputHandlerThread_->globalflags_.Save = false;
+            std::cout << "Saved." << std::endl;
+        }
+
+        if (inputHandlerThread_->globalflags_.Stop )
+        {
+            std::cout << "Bye." << std::endl;
             inputHandlerThread_->globalflags_.Running = false;
         }
-
-        // Escape key pressed
-        if ((Event.Type == sf::Event::KeyPressed)){
-            if((Event.Key.Code == sf::Key::Escape)){
-                appWindow_->Close();
-                inputHandlerThread_->globalflags_.Running = false;
-            }
-        }
-
-        if((Event.Type == sf::Event::KeyPressed)){
-            if((Event.Key.Code == sf::Key::R)){
-                inputHandlerThread_->globalflags_.Restart = true;
-            }
-        }
     }
 }
 
+//handle input events from the clients here
 void heikiko2D::handleInputEvents(objects::SpacialObject* tmpObject)
 {
-    bool standing = tmpObject->standsOnSomething();
-    b2Body* tmpB2Body = tmpObject->getB2Body();
-    b2Vec2 position = tmpB2Body->GetPosition();
-    b2Vec2 linearVelocity = tmpB2Body->GetLinearVelocity();
-    b2Vec2 tmpForce;
-
-    tmpForce.x = Fnull;
-    tmpForce.y = Fnull;
-    GlobalMutex_->Lock();
-    if( standing && inputHandlerThread_->globalflags_.ApplyForceUpwardToPlayer && (Clock_.GetElapsedTime() >= 0.125))
-    {
-        //tmpForce.y = 50.0 * cos(angle);
-        //tmpForce.x = 50.0 * sin(angle);
-        tmpForce.y = jumpForce;
-        tmpForce.x = Fnull;
-
-        tmpB2Body->ApplyForce( tmpForce, position );
-        tmpObject->iJumped();
-        inputHandlerThread_->globalflags_.ApplyForceUpwardToPlayer = false;
-        Clock_.Reset();
-    }
-    if(inputHandlerThread_->globalflags_.ApplyForceDownwardToPlayer)
-    {
-        //tmpForce.y = -50.0 * cos(angle);
-        //tmpForce.x = -50.0 * sin(angle);
-        tmpForce.y = -1 * fallForce;
-        tmpForce.x = Fnull;
-        tmpB2Body->ApplyForce( tmpForce, position );
-    }
-    if(inputHandlerThread_->globalflags_.ApplyForceLeftToPlayer)
-    {
-        tmpForce.y = Fnull;
-        if( linearVelocity.x > (-1 * horizontalSpeedLimit) )
-        {
-            if(standing)
-                tmpForce.x = -1 * horizontalForce;
-            else
-                tmpForce.x = -1 * horizontalForceMidAir;
-            tmpB2Body->ApplyForce( tmpForce, position);
-        }
-    }
-    if(inputHandlerThread_->globalflags_.ApplyForceRightToPlayer)
-    {
-        tmpForce.y = Fnull;
-        if( linearVelocity.x < horizontalSpeedLimit )
-        {
-            if(standing)
-                tmpForce.x = horizontalForce;
-            else
-                tmpForce.x = horizontalForceMidAir;
-            tmpB2Body->ApplyForce( tmpForce, position);
-        }
-    }
-    GlobalMutex_->Unlock();
+//    bool standing = tmpObject->standsOnSomething();
+//    b2Body* tmpB2Body = tmpObject->getB2Body();
+//    b2Vec2 position = tmpB2Body->GetPosition();
+//    b2Vec2 linearVelocity = tmpB2Body->GetLinearVelocity();
+//    b2Vec2 tmpForce;
+//
+//    tmpForce.x = Fnull;
+//    tmpForce.y = Fnull;
+//    GlobalMutex_->Lock();
+//    if( standing && /*here is the message for jumping*/false && (Clock_.GetElapsedTime() >= 0.125))
+//    {
+//        //tmpForce.y = 50.0 * cos(angle);
+//        //tmpForce.x = 50.0 * sin(angle);
+//        tmpForce.y = jumpForce;
+//        tmpForce.x = Fnull;
+//
+//        tmpB2Body->ApplyForce( tmpForce, position );
+//        tmpObject->iJumped();
+//        inputHandlerThread_->globalflags_.ApplyForceUpwardToPlayer = false;
+//        Clock_.Reset();
+//    }
+//    if(/*here is the message for crouching*/false)
+//    {
+//        //tmpForce.y = -50.0 * cos(angle);
+//        //tmpForce.x = -50.0 * sin(angle);
+//        tmpForce.y = -1 * fallForce;
+//        tmpForce.x = Fnull;
+//        tmpB2Body->ApplyForce( tmpForce, position );
+//    }
+//    if(/*here is the message for running left*/false)
+//    {
+//        tmpForce.y = Fnull;
+//        if( linearVelocity.x > (-1 * horizontalSpeedLimit) )
+//        {
+//            if(standing)
+//                tmpForce.x = -1 * horizontalForce;
+//            else
+//                tmpForce.x = -1 * horizontalForceMidAir;
+//            tmpB2Body->ApplyForce( tmpForce, position);
+//        }
+//    }
+//    if(/*here is the message for running right*/false)
+//    {
+//        tmpForce.y = Fnull;
+//        if( linearVelocity.x < horizontalSpeedLimit )
+//        {
+//            if(standing)
+//                tmpForce.x = horizontalForce;
+//            else
+//                tmpForce.x = horizontalForceMidAir;
+//            tmpB2Body->ApplyForce( tmpForce, position);
+//        }
+//    }
+//    GlobalMutex_->Unlock();
 }
 
+//calculate the next scene
+//maybe this should be in its own thread (though same thread as the input message handling maybe)
 void heikiko2D::calculateNextScene()
 {
     simulatedWorld_->Step(timeStep,velocityIterations,positionIterations);
     simulatedWorld_->ClearForces();
 }
 
+//send the scene to each player, only that part which is in his/her viewrange
 void heikiko2D::sendSceneToPlayers()
 {
 //iterate through list of players
 //find range of their FOV
 //send data of objects in players FOV
-     int i = 0;
-        objects::SpacialObject* tmpObject = globalGameObjectManager_->nextSpacialObject( i );
-        while( tmpObject != NULL )
+     /*int i = 0;
+        //objects::SpacialObject* tmpObject = globalGameObjectManager_->nextSpacialObject( i );
+        while( false )
         {
             b2Body* tmpB2Body = tmpObject->getB2Body();
             b2Vec2 position = tmpB2Body->GetPosition();
@@ -162,35 +167,27 @@ void heikiko2D::sendSceneToPlayers()
 
             i++;
             tmpObject = globalGameObjectManager_->nextSpacialObject( i );
-        }
-        appWindow_->Display();
-        appWindow_->Clear();
+        }*/
 }
 
 void heikiko2D::runHeikiko2D()
 {
-    //load level
-    //mainthread reads commands from the commandline
-    //start physics-calculating thread
-    //start network thread
-        //listen for incoming connections
-        //accept incoming connections, ?authenticate player? add player to playerslist
-        //iterate through playerslist and send objectdata
     while (inputHandlerThread_->globalflags_.Running)
     {
         handleSystemEvents();
-
         calculateNextScene();
-
-        displayNextScene();
+        sendSceneToPlayers();
     }
 }
 
 heikiko2D::heikiko2D()
 {
+    //start network thread
+        //listen for incoming connections
+        //accept incoming connections, ?authenticate player? add player to playerslist
+        //iterate through playerslist and send objectdata
     initializePhysics();
     loadLevel();
-
     initializeThreads();
 }
 
