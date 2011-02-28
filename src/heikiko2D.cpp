@@ -6,29 +6,11 @@
 #include <Box2D/Box2D.h>
 #include <inputHandler.hpp>
 
-void heikiko2D::intitializeRenderContext()
-{
-    resolution_.x = 800;
-    resolution_.y = 600;
-    resolutionColor_ = 32;
-
-    ViewRect_ = sf::FloatRect(0, 0, resolution_.x, resolution_.y);
-    twoDCam_ = sf::View(ViewRect_);
-    appWindow_ = new sf::RenderWindow(sf::VideoMode(resolution_.x, resolution_.y, resolutionColor_), "heikiko2D");
-    appWindow_->UseVerticalSync(true);
-    appWindow_->SetView(twoDCam_);
-
-    /* Creating a fullscreen window with the best video mode supported
-    appWindow_->Create(sf::VideoMode::GetMode(0), "SFML Window", sf::Style::Fullscreen);
-    sf::VideoMode DesktopMode = sf::VideoMode::GetDesktopMode(); */
-
-
-}
-
 void heikiko2D::initializeThreads()
 {
     GlobalMutex_ = new sf::Mutex();
     inputHandlerThread_ = new InputHandler(appWindow_, GlobalMutex_);
+
 }
 
 void heikiko2D::initializePhysics()
@@ -142,8 +124,11 @@ void heikiko2D::calculateNextScene()
     simulatedWorld_->ClearForces();
 }
 
-void heikiko2D::displayNextScene()
+void heikiko2D::sendSceneToPlayers()
 {
+//iterate through list of players
+//find range of their FOV
+//send data of objects in players FOV
      int i = 0;
         objects::SpacialObject* tmpObject = globalGameObjectManager_->nextSpacialObject( i );
         while( tmpObject != NULL )
@@ -184,6 +169,13 @@ void heikiko2D::displayNextScene()
 
 void heikiko2D::runHeikiko2D()
 {
+    //load level
+    //mainthread reads commands from the commandline
+    //start physics-calculating thread
+    //start network thread
+        //listen for incoming connections
+        //accept incoming connections, ?authenticate player? add player to playerslist
+        //iterate through playerslist and send objectdata
     while (inputHandlerThread_->globalflags_.Running)
     {
         handleSystemEvents();
@@ -199,8 +191,6 @@ heikiko2D::heikiko2D()
     initializePhysics();
     loadLevel();
 
-
-    intitializeRenderContext();
     initializeThreads();
 }
 

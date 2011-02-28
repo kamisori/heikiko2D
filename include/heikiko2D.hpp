@@ -57,10 +57,9 @@ class heikiko2D
         void handleInputEvents( objects::SpacialObject* tmpObject );
 
         void initializePhysics();
-        void intitializeRenderContext();
         void initializeThreads();
         void calculateNextScene();
-        void displayNextScene();
+        void sendSceneToPlayers();
 };
 
 #endif
