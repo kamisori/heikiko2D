@@ -9,7 +9,6 @@ struct flags{
     bool Running;
     bool Stop;
     bool Save;
-    bool Help;
 };
 
 class InputHandler :public sf::Thread

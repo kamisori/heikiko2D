@@ -7,7 +7,6 @@ InputHandler::InputHandler(sf::Mutex* GlobalMutex)
     globalflags_.Running = true;
     globalflags_.Save = false;
     globalflags_.Stop = false;
-    globalflags_.Help = true;
     Launch();
 }
 InputHandler::~InputHandler()
@@ -17,11 +16,16 @@ InputHandler::~InputHandler()
 
 void InputHandler::Run()
 {
-    int i = 0;
+    int fails = 0;
     std::string input;
     std::cout << "Let's go..." << std::endl << std::endl;
     while( globalflags_.Running )
     {
+        std::cout << "#? : ";
+        std::cin >> input;
+        std::cin.sync();
+        std::cout << std::endl;
+
         if(input.compare("halt") == 0)
         {
             std::cout << "Comming to a grinding halt..." << std::endl;
@@ -40,12 +44,11 @@ void InputHandler::Run()
             globalflags_.Stop = false;
             globalflags_.Save = true;
         }
-        else if(input.compare("help") == 0 || input.compare("h") == 0 || input.compare("?") == 0  || globalflags_.Help )
+        else if(input.compare("help") == 0 || input.compare("h") == 0 || input.compare("?") == 0  || fails > 1 )
         {
-            if(i > 2)
+            if(fails > 1)
             {
-                i = 0;
-                globalflags_.Help = true;
+                fails = 0;
                 std::cout << "Didn't get it the first time, eh? No Problem, here we go again:" << std::endl;
             }
 
@@ -53,21 +56,11 @@ void InputHandler::Run()
             std::cout << "save\t\tSaves all data." << std::endl;
             std::cout << "shutdown\tSaves all data and shuts the server down." << std::endl;
             std::cout << "halt\t\tStops the server ungracefully." << std::endl << std::endl;
-            globalflags_.Help = false;
         }
         else
         {
-            if(i > 2)
-            {
-                globalflags_.Help = true;
-            }
-
-            i++;
-            std::cout << "Come again?" << std::endl;
+            fails++;
+            std::cout << "Say what?" << std::endl;
         }
-        std::cout << "#? : ";
-        std::cin >> input;
-        std::cin.sync();
-        std::cout << std::endl;
     }
 }

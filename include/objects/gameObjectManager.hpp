@@ -5,24 +5,21 @@
 #include <vector>
 #include <map>
 #include <objects/spacialObject.hpp>
-#include <objects/visualAppearance.hpp>
 #include <objects/material.hpp>
 
 namespace objects
 {
-    typedef std::vector< std::string > FileEntry;
-    typedef std::vector< FileEntry > FileData;
+    typedef std::vector< std::string > FileObject;
+    typedef std::vector< FileObject > FileData;
 
     class GameObjectManager
     {
     	public:
-            FileData* parseFileData( std::string* fileName, int fields );
+            FileData* parseFile( std::string* fileName );
 
             void loadMaterials( std::string materialFile );
-            void loadVisualAppearances( std::string visualAppearanceFile );
             void loadObjects( std::string spacialObjectsFile );
 
-            VisualAppearance* provideVisualAppearance( std::string visualAppearanceId );
             Material* provideMaterial( std::string materialId );
 
             SpacialObject* nextSpacialObject( int current );
@@ -30,12 +27,11 @@ namespace objects
     		GameObjectManager();
     		~GameObjectManager();
     	private:
-    	FileEntry* parseFileEntry( std::string* entry, std::string* dataDivider );
-    	char* fetchFileData( std::string* fileName, int fields );
+    	FileObject* parseFileObject( std::string* object, std::string* dataDivider );
+    	std::string fetchFile( std::string* fileName );
 
     	SpacialObject*                      player_;
     	std::vector< SpacialObject* >       spacialObjects_;
-    	std::vector< VisualAppearance* >    visualAppearancesLibrary_;
     	std::vector< Material* >            materialLibrary_;
     };
 

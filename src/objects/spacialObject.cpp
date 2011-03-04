@@ -1,6 +1,6 @@
 #include <string>
+#include <vector>
 #include <SFML/System.hpp>
-#include <objects/visualAppearance.hpp>
 #include <objects/spacialObject.hpp>
 #include <objects/gameObjectManager.hpp>
 #include <main.hpp>
@@ -13,75 +13,28 @@ namespace objects
 {
     void SpacialObject::setBottomObject( SpacialObject* bottomObject )
     {
-        std::cout << this->getSpacialObjectId() << ": ";
-        for(uint32 i = 0; i < objects::sizeOfcontactIDlist; i++)
-        {
-            std::cout << bottom[i] << " ";
-            if(this->bottom[i].empty())
-            {
-                this->bottom[i] = bottomObject->getSpacialObjectId();
-                std::cout << "  ++  " << bottom[i] << std::endl;
-                return;
-            }
-        }
-        std::cout << std::endl;
+        this->bottom.push_back( bottomObject->getSpacialObjectId() );
     }
 
     void SpacialObject::removeBottomObject( SpacialObject* bottomObject )
     {
-        std::string bottomID = bottomObject->getSpacialObjectId();
-        std::cout << this->getSpacialObjectId() << ": ";
-        for(uint32 i = 0; i < objects::sizeOfcontactIDlist; i++)
+        for(std::vector<std::string>::iterator it = this->bottom.begin(); it < this->bottom.end(); it++ )
         {
-            std::cout << bottom[i] << " ";
-            if(this->bottom[i].compare(bottomID) == 0)
+            if(it->compare(bottomObject->getSpacialObjectId()) == 0)
             {
-                std::cout << "  --  " << bottom[i] << std::endl;
-                this->bottom[i].clear();
-                return;
+                this->bottom.erase(it);
             }
         }
-        std::cout << std::endl;
     }
 
     void SpacialObject::iJumped()
     {
-        for(uint32 i = 0; i<objects::sizeOfcontactIDlist;i++)
-        {
-            this->bottom[i].clear();
-        }
+        this->bottom.clear();
     }
 
     bool SpacialObject::standsOnSomething()
     {
-        uint32 tmp = 0;
-
-        for(uint32 i = 0; i<objects::sizeOfcontactIDlist;i++)
-        {
-            if(!this->bottom[i].empty())
-            {
-                tmp += 1;
-            }
-        }
-
-        if(tmp == 0)
-        {
-            return false;
-        }
-        else
-        {
-            return true;
-        }
-    }
-
-    float SpacialObject::getAngleOffsetForAnimation()
-    {
-        return angleOffsetForAnimation_;
-    }
-
-    void SpacialObject::setAngleOffsetForAnimation( float tmp)
-    {
-        angleOffsetForAnimation_ = tmp;
+        return !(this->bottom.empty());
     }
 
     std::string SpacialObject::getSpacialObjectId()
@@ -94,7 +47,7 @@ namespace objects
         return b2Body_;
     }
 
-    VisualAppearance* SpacialObject::getVisualAppearance()
+    std::string SpacialObject::getVisualAppearance()
     {
         return visualAppearance_;
     }
@@ -106,11 +59,8 @@ namespace objects
         Material* temporaryMaterial;
         temporaryMaterial = b2WorldAndVisualWorld.globalGameObjectManager_->provideMaterial( materialId );
 
-        this->visualAppearance_ = b2WorldAndVisualWorld.globalGameObjectManager_->provideVisualAppearance( temporaryMaterial->getVisualAppearanceId() );
-
-        std::string visId ("static");
-        this->visualAppearance_->setCurrentAnimationByAnimationId( visId );
-
+        this->visualAppearance_.assign(temporaryMaterial->getVisualAppearanceId());
+        this->angleOffsetForAnimation_ = temporaryMaterial->getAngleOffsetForAnimation();
         b2FixtureDef* fixtureDefinition = temporaryMaterial->createFixtureDefinition();
         b2BodyDef* bodyDefinition = temporaryMaterial->createBodyDefinition();
 
@@ -130,13 +80,11 @@ namespace objects
         }
 
         this->b2Body_->CreateFixture( fixtureDefinition );
-        this->setAngleOffsetForAnimation( temporaryMaterial->getAngleOffsetForAnimation() );
     }
 
     SpacialObject::~SpacialObject()
     {
         b2WorldAndVisualWorld.simulatedWorld_->DestroyBody(this->b2Body_);
-        this->visualAppearance_ = NULL;
     }
 
 }

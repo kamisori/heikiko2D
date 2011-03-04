@@ -4,11 +4,10 @@
 #include <iostream>
 #include <fstream>
 #include <objects/spacialObject.hpp>
-#include <objects/visualAppearance.hpp>
 #include <objects/gameObjectManager.hpp>
 namespace objects{
 
-    char* GameObjectManager::fetchFileData( std::string* fileName, int fields )
+    std::string GameObjectManager::fetchFile( std::string* fileName )
     {
         std::ifstream ifs( fileName->c_str(), std::ifstream::in );
         char* buffer;
@@ -19,75 +18,98 @@ namespace objects{
             length = ifs.tellg();
             ifs.seekg( 0,std::ios::beg );
 
-            buffer = new char[ length ];
-            for(int i = 0; i < length; i++){
-                buffer[i]=0;
+            buffer = new char[ length +1];
+            for(int i = 0; i <= length; i++){
+                buffer[i]='\0';
             }
 
             ifs.read( buffer, length );
             ifs.close();
-            return buffer;
+            std::string outBuff(buffer);
+
+            delete buffer;
+            return outBuff;
         }
+        std::cout << "File could not be opened: " << fileName << std::endl;
         exit(1);
     }
 
-    FileEntry* GameObjectManager::parseFileEntry( std::string* entry, std::string* dataDivider )
-    {
-        unsigned int lastData = 0;
-        unsigned int nextData = entry->find( (*dataDivider), lastData );
-        unsigned int dataLength = nextData - lastData;
-        FileEntry* tmpEntry = new FileEntry();
-
-        while( ( nextData != std::string::npos) && ( nextData < entry->length()) )
-        {
-            std::string tmpstr = entry->substr( lastData, dataLength );
-            tmpEntry->push_back( tmpstr );
-
-            lastData = nextData + dataDivider->length();
-            nextData = entry->find( (*dataDivider), lastData );
-            dataLength = nextData - lastData;
-        }
-
-        return tmpEntry;
-    }
-
-    FileData* GameObjectManager::parseFileData( std::string* fileName, int fields )
+    FileData* GameObjectManager::parseFile( std::string* fileName )
     {
         std::string fileContent;
         fileContent.clear();
-        fileContent.assign( fetchFileData( fileName, fields ) );
+        fileContent.assign( fetchFile( fileName ) );
 
-        std::string entryDivider ("\r\n");
-        std::string dataDivider (";");
-
-        unsigned int lastEntry = 0;
-        unsigned int nextEntry = fileContent.find( entryDivider, lastEntry );
-        unsigned int entryLength = nextEntry - lastEntry;
-        FileData* tmpData = new FileData();
-
-        while( (nextEntry != std::string::npos) && ( nextEntry < fileContent.length() ) )
+        if(fileContent.length() > 0)
         {
-            std::string temporaryEntryString = fileContent.substr( lastEntry, entryLength );
-            FileEntry* tmpEntry = parseFileEntry( &temporaryEntryString, &dataDivider );
-            tmpData->push_back( (*tmpEntry) );
+            std::string objectDivider ("\r\n");
+            std::string fieldDivider (";");
 
-            lastEntry = nextEntry+entryDivider.length();
-            nextEntry = fileContent.find( entryDivider, lastEntry );
-            entryLength = nextEntry - lastEntry;
+            size_t previousObject = 0;
+            size_t nextObject = 0;
+            size_t objectLength = 0;
+            FileData* tmpData = new FileData();
+
+            do
+            {
+                nextObject = fileContent.find( objectDivider, previousObject );
+                if( nextObject == std::string::npos )
+                {
+                    nextObject = fileContent.length();
+                }
+                objectLength = nextObject - previousObject;
+                if(objectLength > 0)
+                {
+                    std::string temporaryObjectString = fileContent.substr( previousObject, objectLength );
+
+                    FileObject* tmpObject = parseFileObject( &temporaryObjectString, &fieldDivider );
+                    tmpData->push_back( (*tmpObject) );
+                }
+                previousObject = nextObject + objectDivider.length();
+            }
+            while( (previousObject < fileContent.length()) && ( nextObject < fileContent.length() ) );
+            return tmpData;
         }
-        return tmpData;
+
+        std::cout << "File could not be read: " << fileName << std::endl;
+        exit(1);
     }
 
+    FileObject* GameObjectManager::parseFileObject( std::string* object, std::string* fieldDivider )
+    {
+        size_t previousField = 0;
+        size_t nextField = 0;
+        size_t fieldLength = 0;
+        FileObject* tmpObject = new FileObject();
+
+        do
+        {
+            nextField = object->find( (*fieldDivider), previousField );
+            if( nextField == std::string::npos )
+            {
+                nextField = object->length();
+            }
+            fieldLength = nextField - previousField;
+            if(fieldLength > 0)
+            {
+                std::string tmpstr = object->substr( previousField, fieldLength );
+                tmpObject->push_back( tmpstr );
+            }
+            previousField = nextField + fieldDivider->length();
+        }
+        while( ( previousField < object->length()) && ( nextField < object->length()) );
+        return tmpObject;
+    }
 
     void GameObjectManager::loadMaterials( std::string materialFile )
     {
-        FileData* dataFromFile = parseFileData( &materialFile, 24 );
+        FileData* dataFromFile = parseFile( &materialFile );
         FileData::iterator itData;
 
         for( itData = dataFromFile->begin(); itData < dataFromFile->end(); itData++ )
         {
-            FileEntry::iterator itEntry;
-            FileEntry tmp = (*itData);
+            FileObject::iterator itEntry;
+            FileObject tmp = (*itData);
             itEntry = tmp.begin();
 
             std::string materialId = (*itEntry);
@@ -288,35 +310,15 @@ namespace objects{
         }
     }
 
-    void GameObjectManager::loadVisualAppearances( std::string visualAppearanceFile )
-    {
-        FileData* dataFromFile = parseFileData( &visualAppearanceFile, 2 );
-        FileData::iterator itData;
-
-        for( itData = dataFromFile->begin(); itData < dataFromFile->end(); itData++ )
-        {
-            FileEntry::iterator itEntry;
-            FileEntry tmp = (*itData);
-            itEntry = tmp.begin();
-
-            std::string visualId = (*itEntry);
-            itEntry++;
-            std::string animationFile = (*itEntry);
-
-            VisualAppearance* temporaryVisualAppearance = new VisualAppearance( visualId, animationFile );
-            this->visualAppearancesLibrary_.push_back( temporaryVisualAppearance );
-        }
-    }
-
     void GameObjectManager::loadObjects( std::string spacialObjectsFile )
     {
-        FileData* dataFromFile = parseFileData( &spacialObjectsFile, 4 );
+        FileData* dataFromFile = parseFile( &spacialObjectsFile );
         FileData::iterator itData;
 
         for( itData = dataFromFile->begin(); itData < dataFromFile->end(); itData++ )
         {
-            FileEntry::iterator itEntry;
-            FileEntry tmp = (*itData);
+            FileObject::iterator itEntry;
+            FileObject tmp = (*itData);
             itEntry = tmp.begin();
 
             std::string objectId = (*itEntry);
@@ -334,20 +336,6 @@ namespace objects{
                 this->spacialObjects_.push_back( temporaryObject );
             }
         }
-    }
-
-    VisualAppearance* GameObjectManager::provideVisualAppearance( std::string visualAppearanceId )
-    {
-        std::vector< VisualAppearance* >::iterator it;
-        for( it = this->visualAppearancesLibrary_.begin(); it < this->visualAppearancesLibrary_.end(); it++ )
-        {
-            std::string foostr = (*it)->getVisualAppearanceId();
-            if( visualAppearanceId.compare( (*it)->getVisualAppearanceId() ) == 0 )
-            {
-                return (*it);
-            }
-        }
-        exit(1);
     }
 
     Material* GameObjectManager::provideMaterial( std::string materialId )
@@ -382,7 +370,6 @@ namespace objects{
     GameObjectManager::~GameObjectManager()
     {
         this->spacialObjects_.clear();
-        this->visualAppearancesLibrary_.clear();
         this->materialLibrary_.clear();
     }
 }

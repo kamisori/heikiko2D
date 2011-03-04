@@ -33,11 +33,9 @@ void heikiko2D::initializePhysics()
 //also at the moment i dont know anything about how much overhead a single player creates...
 void heikiko2D::loadLevel()
 {
-    std::string visualAppearancesFile ( "data/visualAppearances.data" );
     std::string materialFile ( "data/materials.data" );
     std::string objectFile ( "data/spacialObjects.data" );
 
-    this->globalGameObjectManager_->loadVisualAppearances( visualAppearancesFile );
     this->globalGameObjectManager_->loadMaterials( materialFile );
     this->globalGameObjectManager_->loadObjects( objectFile );
 }

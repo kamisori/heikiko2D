@@ -2,8 +2,6 @@
 #include <fstream>
 #include <string>
 #include <vector>
-#include <objects/animation.hpp>
-#include <objects/visualAppearance.hpp>
 #include <main.hpp>
 
 namespace objects

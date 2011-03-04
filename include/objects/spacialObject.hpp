@@ -2,41 +2,37 @@
 #define SPACIALOBJECT_HPP
 
 #include <string>
+#include <vector>
 #include <SFML/System.hpp>
-#include <objects/visualAppearance.hpp>
 #include <Box2D/Box2D.h>
 
 namespace objects
 {
-    const uint32 sizeOfcontactIDlist = 16;
+    //const uint32 sizeOfcontactIDlist = 16;
     class SpacialObject
     {
     	public:
-//            setB2Body();
-
-
-            float getAngleOffsetForAnimation();
-            void setAngleOffsetForAnimation(float tmp);
             std::string getSpacialObjectId();
             b2Body* getB2Body();
-            VisualAppearance* getVisualAppearance();
+            std::string getVisualAppearance();
             void setBottomObject( SpacialObject* bottomObject );
             void removeBottomObject( SpacialObject* bottomObject );
             bool standsOnSomething();
             void iJumped();
-
+            float getAngleOffsetForAnimation();
             SpacialObject( std::string spacialObjectId, std::string materialId, b2Vec2 position );
                             /*string* audialAppearanceId,*/ /*float objectHealth,*/ /*float objectHardness*/
             ~SpacialObject();
     	protected:
 
     	private:
-            std::string bottom[sizeOfcontactIDlist];
+
+            float angleOffsetForAnimation_;
+            std::vector< std::string > bottom;
 
             sf::Vector2f moveObject( sf::Vector2f addThis );
             std::string       spacialObjectId_;
             b2Body* b2Body_;
-            float angleOffsetForAnimation_;
 //    		float               objectHealth_;              //objects can be damaged
 //    		float               objectHardness_;            //some objects resist damage better than others
                                                             //combined with collision, this means, you can
@@ -46,7 +42,7 @@ namespace objects
 //          pointer to material holding having certain properties,
 //          like, meltable, flamable, temperature for meltpoint/inflamationpoint whatever
 
-            VisualAppearance*   visualAppearance_;          //null means, this is either a zone for a script,
+            std::string   visualAppearance_;          //null means, this is either a zone for a script,
                                                             //or something is attached to the ground, like a
                                                             //pole for a line or something
 
