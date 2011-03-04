@@ -131,6 +131,7 @@
 		<Unit filename="include/heikiko2D.hpp" />
 		<Unit filename="include/inputHandler.hpp" />
 		<Unit filename="include/main.hpp" />
+		<Unit filename="include/networkHandler.hpp" />
 		<Unit filename="include/objects/gameObjectManager.hpp" />
 		<Unit filename="include/objects/material.hpp" />
 		<Unit filename="include/objects/spacialObject.hpp" />
@@ -138,6 +139,7 @@
 		<Unit filename="src/heikiko2D.cpp" />
 		<Unit filename="src/inputHandler.cpp" />
 		<Unit filename="src/main.cpp" />
+		<Unit filename="src/networkHandler.cpp" />
 		<Unit filename="src/objects/gameObjectManager.cpp" />
 		<Unit filename="src/objects/material.cpp" />
 		<Unit filename="src/objects/spacialObject.cpp" />

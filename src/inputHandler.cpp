@@ -1,5 +1,4 @@
 #include <inputHandler.hpp>
-#include <iostream>
 
 InputHandler::InputHandler(sf::Mutex* GlobalMutex)
 {
@@ -7,6 +6,7 @@ InputHandler::InputHandler(sf::Mutex* GlobalMutex)
     globalflags_.Running = true;
     globalflags_.Save = false;
     globalflags_.Stop = false;
+    globalflags_.AcceptNew = false;
     Launch();
 }
 InputHandler::~InputHandler()
@@ -44,6 +44,16 @@ void InputHandler::Run()
             globalflags_.Stop = false;
             globalflags_.Save = true;
         }
+        else if(input.compare("open") == 0)
+        {
+            std::cout << "Opening listener..." << std::endl;
+            globalflags_.AcceptNew = true;
+        }
+        else if(input.compare("close") == 0)
+        {
+            std::cout << "Closing listener..." << std::endl;
+            globalflags_.DenyNew = true;
+        }
         else if(input.compare("help") == 0 || input.compare("h") == 0 || input.compare("?") == 0  || fails > 1 )
         {
             if(fails > 1)
@@ -55,7 +65,10 @@ void InputHandler::Run()
             std::cout << "help/h/?\tPrints this message." << std::endl;
             std::cout << "save\t\tSaves all data." << std::endl;
             std::cout << "shutdown\tSaves all data and shuts the server down." << std::endl;
-            std::cout << "halt\t\tStops the server ungracefully." << std::endl << std::endl;
+            std::cout << "halt\t\tStops the server ungracefully." << std::endl;
+            std::cout << "close\t\tDeny all incoming new connections." << std::endl;
+            std::cout << "open\t\tAccept all incoming new connections." << std::endl;
+            std::cout << std::endl;
         }
         else
         {

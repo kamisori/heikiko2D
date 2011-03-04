@@ -1,14 +1,15 @@
 #ifndef INPUT_HANDLER_HPP
 #define INPUT_HANDLER_HPP
 
+#include <iostream>
 #include <SFML/System.hpp>
-#include <SFML/Window.hpp>
-#include <SFML/Graphics.hpp>
 
-struct flags{
+struct inputFlags{
     bool Running;
     bool Stop;
     bool Save;
+    bool AcceptNew;
+    bool DenyNew;
 };
 
 class InputHandler :public sf::Thread
@@ -17,7 +18,7 @@ class InputHandler :public sf::Thread
         virtual void Run();
     public:
         sf::Mutex* GlobalMutex_;
-        flags globalflags_;
+        inputFlags globalflags_;
         InputHandler(sf::Mutex* GlobalMutex);
         ~InputHandler();
 };

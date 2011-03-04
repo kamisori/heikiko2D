@@ -12,6 +12,7 @@ void heikiko2D::initializeThreads()
 {
     GlobalMutex_ = new sf::Mutex();
     inputHandlerThread_ = new InputHandler(GlobalMutex_);
+    networkHandlerThread_ = new NetworkHandler(GlobalMutex_);
 }
 
 //initializes the physics engine
@@ -55,6 +56,20 @@ void heikiko2D::handleSystemEvents()
         {
             std::cout << "Bye." << std::endl;
             inputHandlerThread_->globalflags_.Running = false;
+        }
+
+        if( inputHandlerThread_->globalflags_.AcceptNew )
+        {
+            std::cout << "Listener is open for new connections." << std::endl;
+            networkHandlerThread_->globalflags_.AcceptNew = true;
+            inputHandlerThread_->globalflags_.AcceptNew = false;
+        }
+
+        if( inputHandlerThread_->globalflags_.DenyNew )
+        {
+            std::cout << "Listener is closed for new connections." << std::endl;
+            networkHandlerThread_->globalflags_.AcceptNew = false;
+            inputHandlerThread_->globalflags_.DenyNew = false;
         }
     }
 }

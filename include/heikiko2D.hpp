@@ -5,9 +5,13 @@
 #include <vector>
 #include <map>
 #include <Box2D/Box2D.h>
+#include <SFML/System.hpp>
+#include <SFML/Window.hpp>
+#include <SFML/Graphics.hpp>
 
 #include <objects/gameObjectManager.hpp>
 #include <inputHandler.hpp>
+#include <networkHandler.hpp>
 #include <contactListener.hpp>
 
 const float32 timeStep = 1.0f / 60.0f;
@@ -32,6 +36,7 @@ class heikiko2D
 {
     public:
         InputHandler* inputHandlerThread_;
+        NetworkHandler* networkHandlerThread_;
         void runHeikiko2D();
 
         heikiko2D();
