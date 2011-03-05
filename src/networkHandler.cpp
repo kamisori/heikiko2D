@@ -2,9 +2,9 @@
 #include <networkHandler.hpp>
 
 
-NetworkHandler::NetworkHandler(sf::Mutex* GlobalMutex)
+NetworkHandler::NetworkHandler(unsigned int Port, sf::Mutex* GlobalMutex)
 {
-    if(listener.Listen(42235))
+    if(listener.Listen(Port))
     {
         globalflags_.Running = true;
         globalflags_.AcceptNew = false;
@@ -14,7 +14,7 @@ NetworkHandler::NetworkHandler(sf::Mutex* GlobalMutex)
     }
     else
     {
-        std::cout << "Can't open a socket on port 42235.";
+        std::cout << "Can't open a socket on port " << Port << ".";
         exit(1);
     }
 }
@@ -34,9 +34,9 @@ void NetworkHandler::Run()
 
         for( unsigned int i = 0; i < nbSockets; i++ )
         {
-            sf::SocketTCP iterator = selector.GetSocketReady(i);
+            sf::SocketTCP newSocket = selector.GetSocketReady(i);
 
-            if(iterator == listener)
+            if(newSocket == listener)
             {
                 sf::IPAddress address;
                 sf::SocketTCP newClient;
@@ -55,8 +55,27 @@ void NetworkHandler::Run()
             }
             else
             {
-
+                sf::Packet packet;
+                if(newSocket.Receive(packet) == sf::Socket::Done)
+                {
+                    std::string message;
+                    packet >> message;
+                    std::cout << message << std::endl;
+                }
+                else
+                {
+                    selector.Remove(newSocket);
+                }
             }
         }
     }
 }
+
+
+
+
+
+
+
+
+

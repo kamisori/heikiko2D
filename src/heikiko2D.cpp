@@ -12,7 +12,7 @@ void heikiko2D::initializeThreads()
 {
     GlobalMutex_ = new sf::Mutex();
     inputHandlerThread_ = new InputHandler(GlobalMutex_);
-    networkHandlerThread_ = new NetworkHandler(GlobalMutex_);
+    networkHandlerThread_ = new NetworkHandler( this->listeningPort, GlobalMutex_);
 }
 
 //initializes the physics engine
@@ -201,6 +201,7 @@ heikiko2D::heikiko2D()
         //iterate through playerslist and send objectdata
     initializePhysics();
     loadLevel();
+    this->listeningPort = 42235;
     initializeThreads();
 }
 

@@ -19,7 +19,7 @@ class NetworkHandler :public sf::Thread
     public:
         sf::Mutex* GlobalMutex_;
         networkFlags globalflags_;
-        NetworkHandler(sf::Mutex* GlobalMutex);
+        NetworkHandler(unsigned int Port, sf::Mutex* GlobalMutex);
         ~NetworkHandler();
 };
 #endif

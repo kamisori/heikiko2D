@@ -57,6 +57,7 @@ class heikiko2D
     protected:
 
     private:
+        unsigned int listeningPort;
         void loadLevel();
         void handleSystemEvents();
         void handleInputEvents( objects::SpacialObject* tmpObject );
