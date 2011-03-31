@@ -14,6 +14,10 @@ class NetworkHandler :public sf::Thread
 {
     private:
         virtual void Run();
+        void iterateThroughWaitingSockets( int nbSockets );
+        void handleNewClient();
+        void handleKnownClient(sf::SocketTCP newSocket);
+
         sf::SelectorTCP selector;
         sf::SocketTCP listener;
     public:
