@@ -20,8 +20,6 @@ NetworkHandler::NetworkHandler(unsigned int Port, sf::Mutex* GlobalMutex)
 }
 NetworkHandler::~NetworkHandler()
 {
-
-    //disconnect all clients first
     this->selector.Clear();
     Terminate();
 }
